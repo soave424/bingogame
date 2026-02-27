@@ -60,11 +60,12 @@ export default function BingoBoard({
               <input
                 key={idx}
                 type="text"
+                inputMode="text"
                 value={word}
                 onChange={(e) => onCellEdit?.(idx, e.target.value)}
                 className={cn(
-                  "aspect-square flex items-center justify-center text-center text-xs font-medium rounded-lg border-2 border-dashed border-muted-foreground/30 bg-background p-1 focus:border-primary focus:outline-none transition-colors",
-                  size >= 5 ? "text-[10px]" : "text-xs"
+                  "aspect-square flex items-center justify-center text-center font-medium rounded-lg border-2 border-dashed border-muted-foreground/30 bg-background p-1 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-colors",
+                  size >= 5 ? "text-xs min-h-[40px]" : "text-sm min-h-[48px]"
                 )}
                 placeholder={`${idx + 1}`}
               />
