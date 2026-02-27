@@ -4,7 +4,8 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { getPlayerId } from "@/lib/gameUtils";
 import { GameRoom, GamePlayer, CalledWord } from "@/lib/gameTypes";
-import { Trophy, Medal, Home, BarChart3, Clock, Target } from "lucide-react";
+import { Trophy, Medal, Home, BarChart3, Clock, Target, CheckCircle } from "lucide-react";
+import { WordRequest } from "@/lib/gameTypes";
 
 export default function ResultPage() {
   const { roomCode } = useParams<{ roomCode: string }>();
@@ -13,6 +14,7 @@ export default function ResultPage() {
   const [room, setRoom] = useState<GameRoom | null>(null);
   const [players, setPlayers] = useState<GamePlayer[]>([]);
   const [calledWords, setCalledWords] = useState<CalledWord[]>([]);
+  const [approvedRequests, setApprovedRequests] = useState<WordRequest[]>([]);
 
   useEffect(() => {
     if (!roomCode) return;
@@ -21,25 +23,18 @@ export default function ResultPage() {
       if (r) {
         setRoom(r as unknown as GameRoom);
         const roomId = (r as any).id;
-        const [{ data: p }, { data: cw }] = await Promise.all([
+        const [{ data: p }, { data: cw }, { data: wr }] = await Promise.all([
           supabase.from('game_players').select('*').eq('room_id', roomId).order('created_at'),
           supabase.from('called_words').select('*').eq('room_id', roomId).order('turn_number'),
+          supabase.from('word_requests').select('*').eq('room_id', roomId).eq('status', 'approved'),
         ]);
         if (p) setPlayers(p as unknown as GamePlayer[]);
         if (cw) setCalledWords(cw as unknown as CalledWord[]);
+        if (wr) setApprovedRequests(wr as unknown as WordRequest[]);
       }
     };
     fetchData();
   }, [roomCode]);
-
-  const sortedPlayers = [...players].sort((a, b) => {
-    if (a.rank !== null && b.rank !== null) return a.rank - b.rank;
-    if (a.rank !== null) return -1;
-    if (b.rank !== null) return 1;
-    if (b.bingo_count !== a.bingo_count) return b.bingo_count - a.bingo_count;
-    if (a.last_bingo_at && b.last_bingo_at) return new Date(a.last_bingo_at).getTime() - new Date(b.last_bingo_at).getTime();
-    return 0;
-  });
 
   // --- 인기 단어 TOP 5 ---
   const wordCounts: Record<string, number> = {};
@@ -53,14 +48,33 @@ export default function ResultPage() {
     .sort((a, b) => b[1] - a[1])
     .slice(0, 5);
 
-  // --- 플레이어별 매칭률 ---
+  // --- 플레이어별 매칭률 (불린 단어 + 인정 단어) ---
   const calledWordSet = new Set(calledWords.map(cw => cw.word));
+  const approvedWordSet = new Set(approvedRequests.map(wr => wr.word));
+  const allMatchedWordSet = new Set([...calledWordSet, ...approvedWordSet]);
   const playerMatchRates = players.map(p => {
     const board = (p.board_data || []) as string[];
     const total = board.filter(w => w).length;
-    const matched = board.filter(w => calledWordSet.has(w)).length;
+    const matched = board.filter(w => allMatchedWordSet.has(w)).length;
     return { name: p.player_name, id: p.id, matched, total, rate: total > 0 ? Math.round((matched / total) * 100) : 0 };
   }).sort((a, b) => b.rate - a.rate);
+
+  // --- 매칭률 맵 (동점 시 매칭률 낮은 사람 우선) ---
+  const matchRateMap = new Map(playerMatchRates.map(pm => [pm.id, pm.rate]));
+
+  const sortedPlayers = [...players].sort((a, b) => {
+    if (a.rank !== null && b.rank !== null) {
+      if (a.rank !== b.rank) return a.rank - b.rank;
+      const rateA = matchRateMap.get(a.id) || 0;
+      const rateB = matchRateMap.get(b.id) || 0;
+      return rateA - rateB;
+    }
+    if (a.rank !== null) return -1;
+    if (b.rank !== null) return 1;
+    if (b.bingo_count !== a.bingo_count) return b.bingo_count - a.bingo_count;
+    if (a.last_bingo_at && b.last_bingo_at) return new Date(a.last_bingo_at).getTime() - new Date(b.last_bingo_at).getTime();
+    return 0;
+  });
 
   // --- 타임라인: 호출자 이름 매핑 ---
   const playerMap = new Map(players.map(p => [p.id, p.player_name]));
@@ -151,6 +165,22 @@ export default function ResultPage() {
                 ))}
               </div>
             </div>
+          )}
+
+          {/* 인정된 단어 목록 */}
+          {approvedRequests.length > 0 && (
+            <div className="bg-card border border-border rounded-xl p-4 space-y-2">
+              <h3 className="text-sm font-semibold text-muted-foreground flex items-center gap-1.5">
+                <CheckCircle className="w-4 h-4" /> 인정된 단어 ({approvedRequests.length}개)
+              </h3>
+              <div className="flex flex-wrap gap-1.5">
+                {approvedRequests.map(wr => (
+                  <span key={wr.id} className="px-2.5 py-1 bg-primary/10 text-primary text-xs font-medium rounded-full">
+                    {wr.word}
+                  </span>
+                ))}
+              </div>
+          </div>
           )}
 
           {/* 플레이어별 매칭률 */}
