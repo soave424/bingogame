@@ -6,7 +6,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { getPlayerId, shuffleArray, checkBingos } from "@/lib/gameUtils";
 import { GameRoom, GamePlayer } from "@/lib/gameTypes";
 import BingoBoard from "@/components/BingoBoard";
-import { Copy, Check, Users, Sparkles } from "lucide-react";
+import { Copy, Check, Users, Sparkles, Maximize2 } from "lucide-react";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 
 export default function WaitingRoom() {
   const { roomCode } = useParams<{ roomCode: string }>();
@@ -155,10 +156,25 @@ export default function WaitingRoom() {
               <span className="text-sm text-muted-foreground">방 코드</span>
               <div className="text-2xl font-mono font-bold tracking-widest">{roomCode}</div>
             </div>
-            <Button variant="outline" size="sm" onClick={copyCode}>
-              {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-              {copied ? "복사됨" : "복사"}
-            </Button>
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" onClick={copyCode}>
+                {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                {copied ? "복사됨" : "복사"}
+              </Button>
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button variant="outline" size="sm">
+                    <Maximize2 className="w-4 h-4" />
+                    크게 보기
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="flex flex-col items-center justify-center py-16">
+                  <span className="text-sm text-muted-foreground mb-2">방 코드</span>
+                  <div className="text-6xl font-mono font-black tracking-[0.3em] text-primary">{roomCode}</div>
+                  <p className="text-muted-foreground mt-4 text-sm">이 코드를 친구들에게 알려주세요!</p>
+                </DialogContent>
+              </Dialog>
+            </div>
           </div>
         </div>
 
