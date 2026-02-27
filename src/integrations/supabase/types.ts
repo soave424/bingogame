@@ -14,7 +14,191 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      called_words: {
+        Row: {
+          called_by: string | null
+          created_at: string | null
+          id: string
+          room_id: string
+          turn_number: number
+          word: string
+        }
+        Insert: {
+          called_by?: string | null
+          created_at?: string | null
+          id?: string
+          room_id: string
+          turn_number?: number
+          word: string
+        }
+        Update: {
+          called_by?: string | null
+          created_at?: string | null
+          id?: string
+          room_id?: string
+          turn_number?: number
+          word?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "called_words_called_by_fkey"
+            columns: ["called_by"]
+            isOneToOne: false
+            referencedRelation: "game_players"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "called_words_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "game_rooms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      game_players: {
+        Row: {
+          bingo_count: number
+          board_data: Json | null
+          created_at: string | null
+          id: string
+          is_host: boolean
+          is_ready: boolean
+          last_bingo_at: string | null
+          marked_cells: Json | null
+          player_name: string
+          rank: number | null
+          room_id: string
+        }
+        Insert: {
+          bingo_count?: number
+          board_data?: Json | null
+          created_at?: string | null
+          id?: string
+          is_host?: boolean
+          is_ready?: boolean
+          last_bingo_at?: string | null
+          marked_cells?: Json | null
+          player_name: string
+          rank?: number | null
+          room_id: string
+        }
+        Update: {
+          bingo_count?: number
+          board_data?: Json | null
+          created_at?: string | null
+          id?: string
+          is_host?: boolean
+          is_ready?: boolean
+          last_bingo_at?: string | null
+          marked_cells?: Json | null
+          player_name?: string
+          rank?: number | null
+          room_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "game_players_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "game_rooms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      game_rooms: {
+        Row: {
+          board_size: number
+          created_at: string | null
+          current_turn_index: number
+          end_condition: number
+          id: string
+          room_code: string
+          status: string
+          topic: string
+          turn_order: Json | null
+          win_condition: number
+          word_list: Json | null
+          word_list_enabled: boolean
+        }
+        Insert: {
+          board_size?: number
+          created_at?: string | null
+          current_turn_index?: number
+          end_condition?: number
+          id?: string
+          room_code: string
+          status?: string
+          topic?: string
+          turn_order?: Json | null
+          win_condition?: number
+          word_list?: Json | null
+          word_list_enabled?: boolean
+        }
+        Update: {
+          board_size?: number
+          created_at?: string | null
+          current_turn_index?: number
+          end_condition?: number
+          id?: string
+          room_code?: string
+          status?: string
+          topic?: string
+          turn_order?: Json | null
+          win_condition?: number
+          word_list?: Json | null
+          word_list_enabled?: boolean
+        }
+        Relationships: []
+      }
+      word_requests: {
+        Row: {
+          called_word: string
+          created_at: string | null
+          id: string
+          requester_id: string
+          requester_name: string
+          room_id: string
+          status: string
+          word: string
+        }
+        Insert: {
+          called_word: string
+          created_at?: string | null
+          id?: string
+          requester_id: string
+          requester_name?: string
+          room_id: string
+          status?: string
+          word: string
+        }
+        Update: {
+          called_word?: string
+          created_at?: string | null
+          id?: string
+          requester_id?: string
+          requester_name?: string
+          room_id?: string
+          status?: string
+          word?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "word_requests_requester_id_fkey"
+            columns: ["requester_id"]
+            isOneToOne: false
+            referencedRelation: "game_players"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "word_requests_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "game_rooms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
