@@ -6,6 +6,7 @@ import { getPlayerId } from "@/lib/gameUtils";
 import { GameRoom, GamePlayer, CalledWord } from "@/lib/gameTypes";
 import { Trophy, Medal, Home, BarChart3, Clock, Target, CheckCircle } from "lucide-react";
 import { WordRequest } from "@/lib/gameTypes";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts";
 
 export default function ResultPage() {
   const { roomCode } = useParams<{ roomCode: string }>();
@@ -146,6 +147,59 @@ export default function ResultPage() {
               </div>
             </div>
           )}
+
+          {/* 전체 단어 빈도 그래프 */}
+          {Object.keys(wordCounts).length > 0 && (() => {
+            const allWordData = Object.entries(wordCounts)
+              .sort((a, b) => b[1] - a[1])
+              .map(([word, count]) => ({ word, count }));
+            const maxCount = allWordData[0]?.count || 1;
+            return (
+              <div className="bg-card border border-border rounded-xl p-4 space-y-2">
+                <h3 className="text-sm font-semibold text-muted-foreground flex items-center gap-1.5">
+                  📊 전체 단어 빈도
+                </h3>
+                <div className="w-full overflow-x-auto">
+                  <div style={{ width: Math.max(allWordData.length * 40, 300), height: 220 }}>
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={allWordData} margin={{ top: 5, right: 5, bottom: 60, left: 0 }}>
+                        <XAxis
+                          dataKey="word"
+                          angle={-45}
+                          textAnchor="end"
+                          interval={0}
+                          tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }}
+                          height={60}
+                        />
+                        <YAxis
+                          allowDecimals={false}
+                          tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }}
+                          width={25}
+                        />
+                        <Tooltip
+                          contentStyle={{
+                            background: 'hsl(var(--card))',
+                            border: '1px solid hsl(var(--border))',
+                            borderRadius: 8,
+                            fontSize: 12,
+                          }}
+                          formatter={(value: number) => [`${value}명`, '사용']}
+                        />
+                        <Bar dataKey="count" radius={[4, 4, 0, 0]}>
+                          {allWordData.map((entry, index) => (
+                            <Cell
+                              key={entry.word}
+                              fill={`hsl(var(--primary) / ${0.4 + (entry.count / maxCount) * 0.6})`}
+                            />
+                          ))}
+                        </Bar>
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
 
           {/* 불린 단어 타임라인 */}
           {calledWords.length > 0 && (
