@@ -6,7 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { getPlayerId, shuffleArray, checkBingos } from "@/lib/gameUtils";
 import { GameRoom, GamePlayer } from "@/lib/gameTypes";
 import BingoBoard from "@/components/BingoBoard";
-import { Copy, Check, Users } from "lucide-react";
+import { Copy, Check, Users, Sparkles } from "lucide-react";
 
 export default function WaitingRoom() {
   const { roomCode } = useParams<{ roomCode: string }>();
@@ -16,6 +16,7 @@ export default function WaitingRoom() {
   const [players, setPlayers] = useState<GamePlayer[]>([]);
   const [boardData, setBoardData] = useState<string[]>([]);
   const [copied, setCopied] = useState(false);
+  const [aiLoading, setAiLoading] = useState(false);
 
   const myPlayer = players.find(p => p.id === playerId);
   const isHost = myPlayer?.is_host || false;
@@ -71,6 +72,27 @@ export default function WaitingRoom() {
     if (!room?.word_list_enabled || !room.word_list.length) return;
     const shuffled = shuffleArray([...room.word_list]).slice(0, totalCells);
     setBoardData(shuffled);
+  };
+
+  const handleAiSuggest = async () => {
+    if (!room) return;
+    setAiLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('suggest-words', {
+        body: { topic: room.topic, count: totalCells },
+      });
+      if (error) throw error;
+      if (data?.words && Array.isArray(data.words) && data.words.length >= totalCells) {
+        setBoardData(data.words.slice(0, totalCells));
+        toast.success("AI가 추천한 단어로 채웠습니다!");
+      } else {
+        toast.error("AI 추천 결과가 부족합니다. 다시 시도해주세요.");
+      }
+    } catch (err: any) {
+      toast.error("AI 추천 실패: " + (err.message || "알 수 없는 오류"));
+    } finally {
+      setAiLoading(false);
+    }
   };
 
   const handleSubmit = async () => {
@@ -159,13 +181,19 @@ export default function WaitingRoom() {
 
         {!myPlayer?.is_ready && (
           <div className="space-y-4">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between flex-wrap gap-2">
               <h2 className="font-bold">빙고판 채우기 ({size}×{size})</h2>
-              {room.word_list_enabled && (
-                <Button variant="outline" size="sm" onClick={handleRandomFill}>
-                  🎲 자동 채우기
+              <div className="flex gap-2">
+                <Button variant="outline" size="sm" onClick={handleAiSuggest} disabled={aiLoading}>
+                  <Sparkles className="w-4 h-4 mr-1" />
+                  {aiLoading ? "추천 중..." : "AI 추천"}
                 </Button>
-              )}
+                {room.word_list_enabled && (
+                  <Button variant="outline" size="sm" onClick={handleRandomFill}>
+                    🎲 자동 채우기
+                  </Button>
+                )}
+              </div>
             </div>
             <BingoBoard
               size={size}
