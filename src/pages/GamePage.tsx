@@ -193,8 +193,24 @@ export default function GamePage() {
               {isMyTurn ? "🎉 내 차례!" : `${currentTurnPlayer?.player_name || ''}의 차례`}
             </span>
           </div>
-          <div className="text-sm text-muted-foreground">
-            우승 조건: {room.win_condition}빙고 | 종료: {room.end_condition}명 우승 시
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-muted-foreground">
+              우승 조건: {room.win_condition}빙고 | 종료: {room.end_condition}명 우승 시
+            </span>
+            {isHost && (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={async () => {
+                  if (!room) return;
+                  const nextIndex = (room.current_turn_index + 1) % room.turn_order.length;
+                  await supabase.from('game_rooms').update({ current_turn_index: nextIndex } as any).eq('id', room.id);
+                  toast.info("턴을 넘겼습니다");
+                }}
+              >
+                턴 넘기기
+              </Button>
+            )}
           </div>
         </div>
 
