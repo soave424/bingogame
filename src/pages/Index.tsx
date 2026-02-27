@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,6 +14,7 @@ import { Crown, Users } from "lucide-react";
 
 export default function Index() {
   const navigate = useNavigate();
+  const { roomCode: paramRoomCode } = useParams<{ roomCode?: string }>();
   const [creating, setCreating] = useState(false);
   const [joining, setJoining] = useState(false);
 
@@ -25,8 +26,10 @@ export default function Index() {
   const [wordListInput, setWordListInput] = useState("");
   const [hostName, setHostName] = useState("");
 
-  const [joinCode, setJoinCode] = useState("");
+  const [joinCode, setJoinCode] = useState(paramRoomCode?.toUpperCase() || "");
   const [joinName, setJoinName] = useState("");
+
+  const defaultTab = paramRoomCode ? "join" : "create";
 
   const handleCreate = async () => {
     if (!hostName.trim()) { toast.error("닉네임을 입력해주세요"); return; }
@@ -144,7 +147,7 @@ export default function Index() {
           <p className="text-muted-foreground">친구들과 함께 즐기는 실시간 빙고 게임</p>
         </div>
 
-        <Tabs defaultValue="create" className="w-full">
+        <Tabs defaultValue={defaultTab} className="w-full">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="create" className="gap-2"><Crown className="w-4 h-4" />방 만들기</TabsTrigger>
             <TabsTrigger value="join" className="gap-2"><Users className="w-4 h-4" />참여하기</TabsTrigger>
@@ -217,7 +220,7 @@ export default function Index() {
             </div>
             <div>
               <Label>방 코드</Label>
-              <Input placeholder="6자리 방 코드" value={joinCode} onChange={e => setJoinCode(e.target.value.toUpperCase())} maxLength={6} />
+              <Input placeholder="6자리 방 코드" value={joinCode} onChange={e => setJoinCode(e.target.value.toUpperCase())} maxLength={6} disabled={!!paramRoomCode} />
             </div>
             <Button onClick={handleJoin} disabled={joining} className="w-full" size="lg">
               {joining ? "참여 중..." : "참여하기"}

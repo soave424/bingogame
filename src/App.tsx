@@ -19,6 +19,7 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
+          <Route path="/join/:roomCode" element={<Index />} />
           <Route path="/room/:roomCode" element={<WaitingRoom />} />
           <Route path="/game/:roomCode" element={<GamePage />} />
           <Route path="/result/:roomCode" element={<ResultPage />} />

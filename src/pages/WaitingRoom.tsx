@@ -6,8 +6,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { getPlayerId, shuffleArray, checkBingos } from "@/lib/gameUtils";
 import { GameRoom, GamePlayer } from "@/lib/gameTypes";
 import BingoBoard from "@/components/BingoBoard";
-import { Copy, Check, Users, Sparkles, Maximize2 } from "lucide-react";
+import { Copy, Check, Users, Sparkles, Maximize2, QrCode } from "lucide-react";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { QRCodeSVG } from "qrcode.react";
 
 export default function WaitingRoom() {
   const { roomCode } = useParams<{ roomCode: string }>();
@@ -156,7 +157,7 @@ export default function WaitingRoom() {
               <span className="text-sm text-muted-foreground">방 코드</span>
               <div className="text-2xl font-mono font-bold tracking-widest">{roomCode}</div>
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-2 flex-wrap">
               <Button variant="outline" size="sm" onClick={copyCode}>
                 {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
                 {copied ? "복사됨" : "복사"}
@@ -172,6 +173,25 @@ export default function WaitingRoom() {
                   <span className="text-sm text-muted-foreground mb-2">방 코드</span>
                   <div className="text-6xl font-mono font-black tracking-[0.3em] text-primary">{roomCode}</div>
                   <p className="text-muted-foreground mt-4 text-sm">이 코드를 친구들에게 알려주세요!</p>
+                </DialogContent>
+              </Dialog>
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button variant="outline" size="sm">
+                    <QrCode className="w-4 h-4" />
+                    QR 코드
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="flex flex-col items-center justify-center py-12">
+                  <span className="text-sm text-muted-foreground mb-4">QR 코드로 참여하기</span>
+                  <QRCodeSVG
+                    value={`${window.location.origin}/join/${roomCode}`}
+                    size={200}
+                    level="M"
+                  />
+                  <p className="text-muted-foreground mt-4 text-sm text-center">
+                    QR 코드를 스캔하면 방 코드가 자동 입력됩니다
+                  </p>
                 </DialogContent>
               </Dialog>
             </div>
