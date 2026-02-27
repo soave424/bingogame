@@ -47,8 +47,8 @@ export default function BingoBoard({
         </span>
       </div>
       <div
-        className="grid gap-1"
-        style={{ gridTemplateColumns: `repeat(${size}, 1fr)` }}
+        className="grid gap-1 w-full"
+        style={{ gridTemplateColumns: `repeat(${size}, minmax(0, 1fr))` }}
       >
         {Array.from({ length: size * size }).map((_, idx) => {
           const word = boardData[idx] || '';
@@ -64,8 +64,8 @@ export default function BingoBoard({
                 value={word}
                 onChange={(e) => onCellEdit?.(idx, e.target.value)}
                 className={cn(
-                  "aspect-square flex items-center justify-center text-center font-medium rounded-lg border-2 border-dashed border-muted-foreground/30 bg-background p-1 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-colors",
-                  size >= 5 ? "text-xs min-h-[40px]" : "text-sm min-h-[48px]"
+                  "aspect-square w-full flex items-center justify-center text-center font-medium rounded-lg border-2 border-dashed border-muted-foreground/30 bg-background p-0.5 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-colors overflow-hidden",
+                  size >= 5 ? "text-[10px]" : "text-xs"
                 )}
                 placeholder={`${idx + 1}`}
               />
