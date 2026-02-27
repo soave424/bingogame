@@ -23,6 +23,8 @@ export default function WaitingRoom() {
   const myPlayer = players.find(p => p.id === playerId);
   const isHost = myPlayer?.is_host || false;
 
+  const [isEditing, setIsEditing] = useState(false);
+
   const fetchData = useCallback(async () => {
     if (!roomCode) return;
     const { data: r } = await supabase.from('game_rooms').select('*').eq('room_code', roomCode).single();
@@ -31,11 +33,11 @@ export default function WaitingRoom() {
     if (p) {
       setPlayers(p as unknown as GamePlayer[]);
       const me = p.find((pl: any) => pl.id === playerId) as any;
-      if (me && (me.board_data as string[]).length > 0) {
+      if (me && (me.board_data as string[]).length > 0 && !isEditing) {
         setBoardData(me.board_data as string[]);
       }
     }
-  }, [roomCode, playerId]);
+  }, [roomCode, playerId, isEditing]);
 
   useEffect(() => {
     if (!playerId || !roomCode) { navigate('/'); return; }
@@ -65,6 +67,7 @@ export default function WaitingRoom() {
   }, [totalCells, boardData.length]);
 
   const handleCellEdit = (idx: number, value: string) => {
+    setIsEditing(true);
     const newData = [...boardData];
     newData[idx] = value;
     setBoardData(newData);
