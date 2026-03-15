@@ -188,7 +188,7 @@ export default function WaitingRoom() {
                 <DialogContent className="flex flex-col items-center justify-center py-12">
                   <span className="text-sm text-muted-foreground mb-4">QR 코드로 참여하기</span>
                   <QRCodeSVG
-                    value={`${window.location.origin}/join/${roomCode}`}
+                    value={`https://bingogame.lovable.app/join/${roomCode}`}
                     size={200}
                     level="M"
                   />
